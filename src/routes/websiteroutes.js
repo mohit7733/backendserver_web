@@ -5,7 +5,7 @@ const { LikeView, ViewView } = require('../models/like_view');
 const auth = require('../middleware/auth');
 const { GotdWinner, GotmWinner, GotyWinner } = require('../models/aword_winner');
 const { Blog } = require('../models/blogs');
-const emailTemplateapproved = require('../middleware/emailtemplate');
+const { emailTemplateapproved, emailTemplatesubmited } = require('../middleware/emailtemplate');
 const { sendEmail } = require('../controllers/emailsender');
 
 // get all websites with like/view counts
@@ -174,10 +174,16 @@ router.post('/submit-site', async (req, res) => {
             });
 
             await website.save();
-
+            const emailContent = await emailTemplatesubmited(website?.designed_by, website?.title, website?.slug);
+            const result = await sendEmail(
+                website?.user_email,
+                'Website Submitted',
+                emailContent
+            );
             res.status(201).json({
                 message: 'Website submitted successfully',
-                website: website
+                website: website,
+                result
             });
         });
     } catch (error) {
@@ -206,7 +212,7 @@ router.get('/single-website/:slug', async (req, res) => {
             GotmWinner.findOne({ website_id: website.website_id }),
             GotyWinner.findOne({ website_id: website.website_id })
         ]);
-        const websitedata = {   
+        const websitedata = {
             website,
             gotd,
             gotm,
@@ -327,7 +333,7 @@ router.post('/websites/:slug', auth, async (req, res) => {
             updateData.updated_at = new Date();
             let result;
             if (status == 1 && existingWebsite?.status == 0) {
-                const emailContent = await emailTemplateapproved(existingWebsite?.designed_by, existingWebsite?.title, existingWebsite?.slug, existingWebsite?.website_id);
+                const emailContent = await emailTemplateapproved(existingWebsite?.designed_by, existingWebsite?.title, existingWebsite?.slug);
                 result = await sendEmail(
                     existingWebsite?.user_email,
                     'Website Approved',
