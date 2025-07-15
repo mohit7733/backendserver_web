@@ -5,6 +5,10 @@ const jobsschema = new mongoose.Schema({
         type: String,
         require: true
     },
+    id:{
+        type:String,
+        require:true
+    },
     email: {
         type: String,
         require: true
@@ -46,9 +50,13 @@ const jobsschema = new mongoose.Schema({
         require: true
     },
     status: {
-        type: String,
-        require: true
+        type: Number,
+        default: 0
     },
+    created_at: {
+        type: Date,
+        default: Date.now
+    }
 })
 
 const Jobs = mongoose.model("Jobs", jobsschema);

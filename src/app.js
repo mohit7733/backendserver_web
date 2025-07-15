@@ -40,12 +40,14 @@ app.use(express.json());
 app.use('/public/uploads', express.static('public/uploads'));
 app.use('/public/blogs', express.static('public/blogs'));
 app.use('/public/ads', express.static('public/ads'));
+app.use('/public/job_images', express.static('public/job_images'));
 
 // Sample route
 app.get('/api', (req, res) => {
     res.send('Hello World');
 });
 app.use('/api', userRoutes);
+app.use('/api', pagesRoutes);
 app.use('/api', colorsRoutes);
 app.use('/api', tagsRoutes);
 app.use('/api', adspaceRoutes)
@@ -62,7 +64,6 @@ app.use('/api', contactsRoutes)
 app.use('/api', countryRoutes)
 app.use('/api', usersRoutes)
 app.use('/api', auth, awordsRoutes);
-app.use('/api', auth, pagesRoutes);
 //auth middleware
 // app.get('/', auth, (req, res) => {
 //     res.send('Hello World');

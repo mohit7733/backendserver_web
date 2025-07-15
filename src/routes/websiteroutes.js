@@ -95,7 +95,7 @@ router.post('/submit-site', async (req, res) => {
                 cb(null, 'public/uploads/');
             },
             filename: function (req, file, cb) {
-                cb(null, Date.now() + '-' + file.originalname);
+                cb(null, Date.now() + '-' + file.originalname.replace(/ /g, '-'));
             }
         });
 
@@ -232,7 +232,7 @@ router.post('/websites/:slug', auth, async (req, res) => {
                 cb(null, 'public/uploads/');
             },
             filename: function (req, file, cb) {
-                cb(null, Date.now() + '-' + file.originalname);
+                cb(null, Date.now() + '-' + file.originalname.replace(/ /g, '-'));
             }
         });
 

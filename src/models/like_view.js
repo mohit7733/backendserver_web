@@ -42,7 +42,23 @@ const viewSchema = new mongoose.Schema({
     },
 });
 
+const jobViewSchema = new mongoose.Schema({
+    job_id: {
+        type: Number,
+        required: true,
+    },
+    view_count: {
+        type: Number,
+        default: 0,
+    },
+    ip_address: {
+        type: String,
+        required: true,
+    },
+});
+
 const LikeView = mongoose.model('LikeView', likeSchema);
 const ViewView = mongoose.model('ViewView', viewSchema);
+const JobView = mongoose.model('JobView', jobViewSchema);
 
-module.exports = { LikeView, ViewView };
+module.exports = { LikeView, ViewView, JobView };

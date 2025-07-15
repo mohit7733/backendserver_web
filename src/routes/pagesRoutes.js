@@ -1,9 +1,23 @@
 const express = require('express');
 const Page = require('../models/pages');
+const auth = require('../middleware/auth');
 const router = express.Router();
 
+router.get('/metapages/:slug', async (req, res) => {
+    const { slug } = req.params;
+    try {
+        const page = await Page.findOne({ page_slug: slug });  // Find page by slug
+        if (!page) {
+            return res.status(404).json({ message: 'Page not found' });
+        }
+        res.status(200).json(page);
+    } catch (err) {
+        res.status(500).json({ message: 'Error fetching page', error: err });
+    }
+});
+
 // Fetch all pages
-router.get('/pages', async (req, res) => {
+router.get('/pages', auth, async (req, res) => {
     try {
         const pages = await Page.find();  // Fetch all pages from MongoDB
         res.status(200).json(pages);
@@ -13,7 +27,7 @@ router.get('/pages', async (req, res) => {
 });
 
 // Fetch a specific page by slug
-router.get('/pages/:slug', async (req, res) => {
+router.get('/pages/:slug', auth, async (req, res) => {
     const { slug } = req.params;
     try {
         const page = await Page.findOne({ page_slug: slug });  // Find page by slug
@@ -27,7 +41,7 @@ router.get('/pages/:slug', async (req, res) => {
 });
 
 // Create a new page
-router.post('/pages', async (req, res) => {
+router.post('/pages', auth, async (req, res) => {
     const { page_slug, page_name, page_title, page_content, page_meta_keywords, page_meta_description, page_edit } = req.body;
 
     try {
@@ -48,7 +62,7 @@ router.post('/pages', async (req, res) => {
 });
 
 // Update a specific page
-router.post('/pages/:id', async (req, res) => {
+router.post('/pages/:id', auth, async (req, res) => {
     const { id } = req.params;
     const { page_title, page_content, page_meta_keywords, page_meta_description, page_edit } = req.body;
     console.log(req.body);
