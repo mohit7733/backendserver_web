@@ -21,6 +21,7 @@ const subscriberRoutes = require("./routes/subscriberRoutes")
 const contactsRoutes = require("./routes/contactsRoutes")
 const countryRoutes = require("./routes/country")
 const usersRoutes = require("./routes/usersRoutes")
+const newslettersRoutes = require("./routes/newslettersRoutes")
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -63,6 +64,7 @@ app.use('/api', userloginRoutes)
 app.use('/api', contactsRoutes)
 app.use('/api', countryRoutes)
 app.use('/api', usersRoutes)
+app.use('/api', newslettersRoutes)
 app.use('/api', auth, awordsRoutes);
 //auth middleware
 // app.get('/', auth, (req, res) => {
