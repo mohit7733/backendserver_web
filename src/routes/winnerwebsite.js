@@ -67,6 +67,7 @@ router.get('/got_winner/:count/:page/:winnertype', async (req, res) => {
         const validTypes = ['gotd', 'gotm', 'goty'];
         if (!validTypes.includes(winnertype)) {
             return res.status(404).json({
+                status: 404,
                 success: false,
                 message: 'Not Found'
             });
