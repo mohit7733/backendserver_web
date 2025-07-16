@@ -9,7 +9,7 @@ const { emailTemplateapproved, emailTemplatesubmited } = require('../middleware/
 const { sendEmail } = require('../controllers/emailsender');
 
 // get all websites with like/view counts
-router.get('/websites', async (req, res) => {
+router.get('/websites', auth, async (req, res) => {
     try {
         // Fetch all websites and all LikeView, ViewView, and GotdWinner in parallel
         const [websites, likeViews, viewViews, gotdWinners] = await Promise.all([
@@ -364,7 +364,7 @@ router.delete('/websites/:slug', auth, async (req, res) => {
 });
 
 
-router.get('/websites-count', async (req, res) => {
+router.get('/websites-count', auth, async (req, res) => {
     try {
         // Fetch all counts in parallel for efficiency
         const [
