@@ -445,4 +445,100 @@ const emailTemplatesubmited = (recipientName = "User", websiteTitle = "your webs
     `
 })
 
-module.exports = { emailTemplateapproved, websiteadditionalinfo, guruofday, emailTemplatesubmited };
+
+const forgetpassword = (recipientName = "User", otp = "") => ({
+    html: `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Forgot Password - Web Guru Awards</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background: #f7f7f7;
+                margin: 0;
+                padding: 0;
+            }
+            .container {
+                background: #fff;
+                max-width: 500px;
+                margin: 40px auto;
+                border-radius: 8px;
+                box-shadow: 0 2px 8px #0001;
+                padding: 32px 28px 24px 28px;
+            }
+            .header {
+                text-align: center;
+                padding-bottom: 16px;
+                border-bottom: 1px solid #eee;
+            }
+            .title {
+                font-size: 22px;
+                font-weight: 700;
+                color: #e0621f;
+                margin: 0 0 12px 0;
+            }
+            .content {
+                margin: 24px 0 18px 0;
+                font-size: 16px;
+                color: #222;
+                line-height: 1.7;
+            }
+            .otp-box {
+                display: inline-block;
+                background: #e0621f;
+                color: #fff;
+                font-size: 24px;
+                font-weight: bold;
+                letter-spacing: 4px;
+                padding: 12px 32px;
+                border-radius: 6px;
+                margin: 18px 0;
+            }
+            .footer {
+                text-align: center;
+                color: #888;
+                font-size: 13px;
+                margin-top: 32px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <img src="https://www.webguruawards.com/public/images/img_logo.png" alt="Web Guru Awards" style="max-width:120px;margin-bottom:8px;">
+                <div class="title">Password Reset Request</div>
+            </div>
+            <div class="content">
+                <p>Hello${recipientName ? `, ${recipientName}` : ""},</p>
+                <p>
+                    We received a request to reset your password for your Web Guru Awards account.
+                </p>
+                <p>
+                    Please use the following One-Time Password (OTP) to reset your password:
+                </p>
+                <div class="otp-box">${otp}</div>
+                <p>
+                    This OTP is valid for a limited time and can only be used once. If you did not request a password reset, please ignore this email.
+                </p>
+                <p>
+                    If you need further assistance, feel free to contact us at 
+                    <a href="mailto:info@webguruawards.com" style="color:#e0621f;text-decoration:underline;">info@webguruawards.com</a>.
+                </p>
+                <p>
+                    Thanks,<br>
+                    Web Guru Awards Team<br>
+                    <a href="https://www.webguruawards.com" style="color:#e0621f;text-decoration:none;">www.webguruawards.com</a>
+                </p>
+            </div>
+            <div class="footer">
+                &copy; ${new Date().getFullYear()} Web Guru Awards
+            </div>
+        </div>
+    </body>
+    </html>
+    `
+})
+
+module.exports = { emailTemplateapproved, websiteadditionalinfo, guruofday, emailTemplatesubmited, forgetpassword };

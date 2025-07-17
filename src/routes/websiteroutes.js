@@ -292,18 +292,18 @@ router.post('/websites/:slug', auth, async (req, res) => {
                 website_banner_image = req.files['website_banner_image'][0].path;
             }
 
-            if (req?.files?.website_image) {
-                // Delete old website image if exists
-                if (existingWebsite.website_image) {
-                    const fs = require('fs');
-                    try {
-                        fs.unlinkSync(existingWebsite.website_image);
-                    } catch (err) {
-                        console.error('Error deleting old website image:', err);
-                    }
-                }
-                website_image = req.files['website_image'][0].path;
-            }
+            // if (req?.files?.website_image) {
+            //     // Delete old website image if exists
+            //     if (existingWebsite.website_image) {
+            //         const fs = require('fs');
+            //         try {
+            //             fs.unlinkSync(existingWebsite.website_image);
+            //         } catch (err) {
+            //             console.error('Error deleting old website image:', err);
+            //         }
+            //     }
+            //     website_image = req.files['website_image'][0].path;
+            // }
 
             // Create update data object with only provided fields
             const updateData = {};
