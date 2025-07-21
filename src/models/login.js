@@ -71,6 +71,22 @@ const signupSchema = new mongoose.Schema({
         type: String,
         default: null,
     },
+    youtube_url: {
+        type: String,
+        default: null,
+    },
+    behance_url: {
+        type: String,
+        default: null,
+    },
+    tiktok_url: {
+        type: String,
+        default: null,
+    },
+    dribbble_url: {
+        type: String,
+        default: null,
+    },
     createdAt: {
         type: Date,
         default: Date.now,

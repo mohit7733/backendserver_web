@@ -6,6 +6,9 @@ const bcrypt = require('bcryptjs');
 const { sendEmail } = require("../controllers/emailsender");
 const { forgetpassword } = require("../middleware/emailtemplate");
 const Website = require('../models/website');
+const { LikeView, ViewView } = require('../models/like_view');
+const { GotdWinner, GotmWinner, GotyWinner } = require('../models/aword_winner');
+
 
 
 // Helper function to check for missing fields
@@ -82,7 +85,7 @@ router.post("/user/update-profile", async (req, res) => {
         // Use a list of allowed fields and update in a loop for speed and maintainability
         const updatableFields = [
             "email", "profileImage", "description", "firstName", "username",
-            "designer_url", "country", "instagram_url", "facebook_url", "twitter_url", "linkedin_url", "designed_by"    
+            "designer_url", "country", "instagram_url", "facebook_url", "twitter_url", "linkedin_url", "designed_by", "youtube_url", "behance_url", "dribbble_url", "tiktok_url"
         ];
         updatableFields.forEach(field => {
             if (typeof req.body[field] === "string") {
@@ -165,15 +168,60 @@ router.get("/designer-profile/:slug", async (req, res) => {
     const { slug } = req.params;
     try {
         // Fetch user and websites in parallel for speed
-        const [user, websites] = await Promise.all([
+        const [user, websites, likeViews, viewViews, gotdWinners, gotmWinners, gotyWinners] = await Promise.all([
             SignupModel.findOne({ email: slug }),
-            Website.find({ user_email: slug })
+            Website.find({ user_email: slug }),
+            LikeView.find(),
+            ViewView.find(),
+            GotdWinner.find(),
+            GotmWinner.find(),
+            GotyWinner.find(),
         ]);
+
+        // Create maps for fast lookup
+        let totallike = 0
+        const likeMap = {};
+        likeViews.forEach(lv => {
+            if (!likeMap[lv.website_id]) likeMap[lv.website_id] = 0;
+            if (lv.like_count > 0) likeMap[lv.website_id]++;
+            totallike += 1;
+        });
+
+
+
+        const viewMap = {};
+        viewViews.forEach(vv => {
+            if (!viewMap[vv.website_id]) viewMap[vv.website_id] = 0;
+            if (vv.view_count > 0) viewMap[vv.website_id]++;
+        });
+        let totalwin = 0;
+        const updatedWebsites = websites.map(website => {
+            const websiteObj = website.toObject();
+            gotdWinners.forEach(winner => {
+                if (website.website_id === winner.website_id) totalwin += 1;
+            });
+            gotmWinners.forEach(winner => {
+                if (website.website_id === winner.website_id) totalwin += 1;
+            });
+            gotyWinners.forEach(winner => {
+                if (website.website_id === winner.website_id) totalwin += 1;
+            });
+            return {
+                ...websiteObj,
+                real_like_count: likeMap[website.website_id] || 0,
+                real_view_count: viewMap[website.website_id] || 0,
+            };
+        });
+
+
+
         return res.json({
             success: true,
             message: "Designer profile fetched",
             user: user || {},
-            website: websites || []
+            website: updatedWebsites || [],
+            total_like: totallike,
+            total_win: totalwin,
         });
     } catch (error) {
         return res.status(500).json({
