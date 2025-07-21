@@ -173,7 +173,7 @@ router.get("/designer-profile/:slug", async (req, res) => {
             success: true,
             message: "Designer profile fetched",
             user: user || {},
-            websites: websites || []
+            website: websites || []
         });
     } catch (error) {
         return res.status(500).json({
