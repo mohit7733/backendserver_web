@@ -43,6 +43,34 @@ const signupSchema = new mongoose.Schema({
         type: String,
         default: null,
     },
+    designer_url: {
+        type: String,
+        default: null,
+    },
+    designed_by: {
+        type: String,
+        default: null,
+    },
+    country: {
+        type: String,
+        default: null,
+    },
+    instagram_url: {
+        type: String,
+        default: null,
+    },
+    facebook_url: {
+        type: String,
+        default: null,
+    },
+    twitter_url: {
+        type: String,
+        default: null,
+    },
+    linkedin_url: {
+        type: String,
+        default: null,
+    },
     createdAt: {
         type: Date,
         default: Date.now,

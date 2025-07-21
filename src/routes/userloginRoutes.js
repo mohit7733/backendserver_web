@@ -5,6 +5,8 @@ const { generateToken } = require("../utils/jwt");
 const bcrypt = require('bcryptjs');
 const { sendEmail } = require("../controllers/emailsender");
 const { forgetpassword } = require("../middleware/emailtemplate");
+const Website = require('../models/website');
+
 
 // Helper function to check for missing fields
 function hasMissingFields(obj, fields) {
@@ -77,21 +79,22 @@ router.post("/user/update-profile", async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: "User not found.", success: false });
         }
-        if (typeof email === "string" && email.trim()) {
-            user.email = email.trim();
-        }
-        if (typeof profileImage === "string") {
-            user.profileImage = profileImage;
-        }
-        if (typeof description === "string") {
-            user.description = description;
-        }
-        if (typeof firstName === "string") {
-            user.firstName = firstName;
-        }
-        if (typeof username === "string") {
-            user.username = username;
-        }
+        // Use a list of allowed fields and update in a loop for speed and maintainability
+        const updatableFields = [
+            "email", "profileImage", "description", "firstName", "username",
+            "designer_url", "country", "instagram_url", "facebook_url", "twitter_url", "linkedin_url", "designed_by"    
+        ];
+        updatableFields.forEach(field => {
+            if (typeof req.body[field] === "string") {
+                // For email, trim and check non-empty
+                if (field === "email") {
+                    const trimmed = req.body.email.trim();
+                    if (trimmed) user.email = trimmed;
+                } else {
+                    user[field] = req.body[field];
+                }
+            }
+        });
         await user.save();
 
         return res.status(200).json({
@@ -157,6 +160,18 @@ router.post("/user/verifyotp", async (req, res) => {
     }
 });
 
+
+router.get("/designer-profile/:slug", async (req, res) => {
+    try {
+        const { slug } = req.params;
+        console.log(slug)
+        const website = await Website.find({ user_email: slug });
+        const user = await SignupModel.findOne({ email: slug });
+        return res.status(200).json({ message: "Designer profile fetched successfully", website: website || [], user: user || {}, success: true });
+    } catch (error) {
+        return res.status(500).json({ message: "Failed to fetch designer profile", error: error.message, success: false });
+    }
+});
 
 
 module.exports = router;    

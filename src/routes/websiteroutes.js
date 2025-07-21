@@ -7,6 +7,7 @@ const { GotdWinner, GotmWinner, GotyWinner } = require('../models/aword_winner')
 const { Blog } = require('../models/blogs');
 const { emailTemplateapproved, emailTemplatesubmited } = require('../middleware/emailtemplate');
 const { sendEmail } = require('../controllers/emailsender');
+const { SignupModel } = require('../models/login');
 
 // get all websites with like/view counts
 router.get('/websites', auth, async (req, res) => {
@@ -212,11 +213,16 @@ router.get('/single-website/:slug', async (req, res) => {
             GotmWinner.findOne({ website_id: website.website_id }),
             GotyWinner.findOne({ website_id: website.website_id })
         ]);
+
+        const user = await SignupModel.findOne({ email: website.user_email });
+
+
         const websitedata = {
             website,
             gotd,
             gotm,
-            goty
+            goty,
+            user
         }
         res.status(200).json(websitedata);
     } catch (error) {
