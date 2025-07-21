@@ -162,14 +162,25 @@ router.post("/user/verifyotp", async (req, res) => {
 
 
 router.get("/designer-profile/:slug", async (req, res) => {
+    const { slug } = req.params;
     try {
-        const { slug } = req.params;
-        console.log(slug)
-        const website = await Website.find({ user_email: slug });
-        const user = await SignupModel.findOne({ email: slug });
-        return res.status(200).json({ message: "Designer profile fetched successfully", website: website || [], user: user || {}, success: true });
+        // Fetch user and websites in parallel for speed
+        const [user, websites] = await Promise.all([
+            SignupModel.findOne({ email: slug }),
+            Website.find({ user_email: slug })
+        ]);
+        return res.json({
+            success: true,
+            message: "Designer profile fetched",
+            user: user || {},
+            websites: websites || []
+        });
     } catch (error) {
-        return res.status(500).json({ message: "Failed to fetch designer profile", error: error.message, success: false });
+        return res.status(500).json({
+            success: false,
+            message: "Error fetching designer profile",
+            error: error.message
+        });
     }
 });
 
