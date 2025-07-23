@@ -46,14 +46,12 @@ router.post("/user/signup", async (req, res) => {
 
 router.post("/user/login", async (req, res) => {
     const { email, password } = req.body;
-    console.log(req.body);
 
     if (hasMissingFields(req.body, ["email", "password"])) {
         return res.status(400).json({ message: "All fields are required", success: false });
     }
     try {
         const alreadyExists = await SignupModel.findOne({ $or: [{ email }, { username: email }] });
-        console.log(alreadyExists);
         if (!alreadyExists) {
             return res.status(404).json({ message: "Invalid email/username or password", success: false });
         }
@@ -83,10 +81,28 @@ router.post("/user/update-profile", async (req, res) => {
             return res.status(404).json({ message: "User not found.", success: false });
         }
         // Use a list of allowed fields and update in a loop for speed and maintainability
+        // Check for payload too large (e.g., profileImage size)
+        const MAX_PROFILE_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
+
         const updatableFields = [
             "email", "profileImage", "description", "firstName", "username",
             "designer_url", "country", "instagram_url", "facebook_url", "twitter_url", "linkedin_url", "designed_by", "youtube_url", "behance_url", "dribbble_url", "tiktok_url"
         ];
+
+        // If profileImage is present and is a base64 string, check its size
+        if (typeof req.body.profileImage === "string") {
+            // Estimate base64 size
+            const base64Length = req.body.profileImage.length;
+            // 1 character = 0.75 bytes in base64
+            const approxBytes = Math.ceil(base64Length * 0.75);
+            if (approxBytes > MAX_PROFILE_IMAGE_SIZE) {
+                return res.status(413).json({
+                    message: "Profile image is too large. Maximum allowed size is 2MB.",
+                    success: false
+                });
+            }
+        }
+
         updatableFields.forEach(field => {
             if (typeof req.body[field] === "string") {
                 // For email, trim and check non-empty
@@ -229,6 +245,37 @@ router.get("/designer-profile/:slug", async (req, res) => {
             message: "Error fetching designer profile",
             error: error.message
         });
+    }
+});
+
+
+router.get("/users", async (req, res) => {
+    try {
+        const users = await SignupModel.find();
+        res.status(200).json({ users, success: true });
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching users", error: error.message, success: false });
+    }
+});
+
+router.get("/users/:id", async (req, res) => {
+    const { id } = req.params;
+    try {
+        const user = await SignupModel.findById(id);
+        res.status(200).json({ user, success: true });
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching user", error: error.message, success: false });
+    }
+});
+
+router.post("/users/update/:id", async (req, res) => {
+    const { id } = req.params;
+    const { role, adminAccess } = req.body;
+    try {
+        const user = await SignupModel.findByIdAndUpdate(id, { role, adminAccess }, { new: true });
+        res.status(200).json({ user, success: true });
+    } catch (error) {
+        res.status(500).json({ message: "Error updating user", error: error.message, success: false });
     }
 });
 

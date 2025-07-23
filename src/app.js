@@ -24,6 +24,7 @@ const usersRoutes = require("./routes/usersRoutes")
 const newslettersRoutes = require("./routes/newslettersRoutes")
 dotenv.config();
 const app = express();
+app.use(express.json({ limit: '50mb' }));
 const PORT = process.env.PORT || 8080;
 // const corsOptions = {
 //     origin: ["*"], // Replace with your frontend URLs allowed to access the server

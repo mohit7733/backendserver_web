@@ -91,6 +91,14 @@ const signupSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
+    role: {
+        type: String,
+        default: "user",
+    },
+    adminAccess: {
+        type: Array,
+        default: [],
+    },
 });
 
 // Prevent saving if email is missing or null
@@ -110,6 +118,6 @@ signupSchema.pre('save', async function (next) {
 });
 
 
-const SignupModel = mongoose.model("signup", signupSchema);
+const SignupModel = mongoose.model("web_users", signupSchema);
 
 module.exports = { SignupModel };

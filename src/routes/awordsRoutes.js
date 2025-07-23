@@ -35,6 +35,8 @@ router.post('/awords', async (req, res) => {
                     mail_sent: mail_gotd ?? 0
                 }).save());
             }
+        } else {
+            await GotdWinner.deleteOne({ website_id });
         }
 
         if (gotm_date) {
@@ -49,6 +51,8 @@ router.post('/awords', async (req, res) => {
                     mail_sent: mail_gotm ?? 0
                 }).save());
             }
+        } else {
+            await GotmWinner.deleteOne({ website_id });
         }
 
         if (goty_date) {
@@ -63,6 +67,8 @@ router.post('/awords', async (req, res) => {
                     mail_sent: mail_goty ?? 0
                 }).save());
             }
+        } else {
+            await GotyWinner.deleteOne({ website_id });
         }
 
         // Execute all updates in parallel
@@ -86,7 +92,7 @@ router.post('/awords', async (req, res) => {
 router.get('/awords/:website_id', async (req, res) => {
     try {
         const { website_id } = req.params;
-        
+
         // Fetch all award winners in parallel for better performance
         const [gotdWinner, gotmWinner, gotyWinner] = await Promise.all([
             GotdWinner.findOne({ website_id }),
@@ -98,7 +104,7 @@ router.get('/awords/:website_id', async (req, res) => {
         res.status(200).json({
             success: true,
             data: {
-                gotdWinner: gotdWinner?.award_date   || null,
+                gotdWinner: gotdWinner?.award_date || null,
                 gotmWinner: gotmWinner?.award_month || null,
                 gotyWinner: gotyWinner?.award_year || null
             }
