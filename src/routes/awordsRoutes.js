@@ -20,6 +20,50 @@ router.post('/awords', async (req, res) => {
             GotyWinner.findOne({ website_id })
         ]);
 
+        // Prevent multiple websites from having the same award date/month/year
+
+        // Check for duplicate GOTD (day) award
+        if (gotd_date) {
+            const duplicateGotd = await GotdWinner.findOne({
+                award_date: gotd_date,
+                website_id: { $ne: website_id }
+            });
+            if (duplicateGotd) {
+                return res.status(200).json({
+                    success: false,
+                    message: 'Another website has already been awarded GOTD for this date.'
+                });
+            }
+        }
+
+        // Check for duplicate GOTM (month) award
+        if (gotm_date) {
+            const duplicateGotm = await GotmWinner.findOne({
+                award_month: gotm_date,
+                website_id: { $ne: website_id }
+            });
+            if (duplicateGotm) {
+                return res.status(200).json({
+                    success: false,
+                    message: 'Another website has already been awarded GOTM for this month.'
+                });
+            }
+        }
+
+        // Check for duplicate GOTY (year) award
+        if (goty_date) {
+            const duplicateGoty = await GotyWinner.findOne({
+                award_year: goty_date,
+                website_id: { $ne: website_id }
+            });
+            if (duplicateGoty) {
+                return res.status(200).json({
+                    success: false,
+                    message: 'Another website has already been awarded GOTY for this year.'
+                });
+            }
+        }
+
         // Update or create winners based on provided dates
         const updates = [];
 

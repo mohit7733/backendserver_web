@@ -353,7 +353,7 @@ router.post('/websites/:slug', auth, async (req, res) => {
             updateData.updated_at = new Date();
             let result;
             if (status == 1 && existingWebsite?.status == 0) {
-                const emailContent = await emailTemplateapproved(existingWebsite?.designed_by, existingWebsite?.title, existingWebsite?.slug);
+                const emailContent = await emailTemplateapproved(existingWebsite?.designed_by, existingWebsite?.title, existingWebsite?.slug, "badge");
                 result = await sendEmail(
                     existingWebsite?.user_email,
                     'Website Approved',

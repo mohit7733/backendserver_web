@@ -1,4 +1,4 @@
-const emailTemplateapproved = (recipientName = "User", websiteTitle = "your website", websiteSlug = "") => ({
+const emailTemplateapproved = (recipientName = "User", websiteTitle = "your website", websiteSlug = "", badge = "badge") => ({
     html: `
     <!DOCTYPE html>
     <html>
@@ -89,7 +89,7 @@ const emailTemplateapproved = (recipientName = "User", websiteTitle = "your webs
                 </a>
                 <p style="margin-top:24px;">
                     <b>Show off your achievement!</b><br>
-                    Add the <a class="badge-link" href="https://www.webguruawards.com/badge/${websiteSlug}" target="_blank">Web Guru Awards badge</a> to your website and let the world know about your success.
+                    Add the <a class="badge-link" href="https://www.webguruawards.com/${badge}/${websiteSlug}" target="_blank">Web Guru Awards badge</a> to your website and let the world know about your success.
                 </p>
                 <p>
                     If you have any questions, feel free to contact us at <a href="mailto:info@webguruawards.com">info@webguruawards.com</a>.
