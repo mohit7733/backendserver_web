@@ -8,6 +8,7 @@ const { forgetpassword } = require("../middleware/emailtemplate");
 const Website = require('../models/website');
 const { LikeView, ViewView } = require('../models/like_view');
 const { GotdWinner, GotmWinner, GotyWinner } = require('../models/aword_winner');
+const auth = require('../middleware/auth');
 
 
 
@@ -183,10 +184,14 @@ router.post("/user/verifyotp", async (req, res) => {
 router.get("/designer-profile/:slug", async (req, res) => {
     const { slug } = req.params;
     try {
+        const webdata = await Website.findOne({ slug });
+        if (!webdata) {
+            return res.status(404).json({ message: "Website not found", success: false });
+        }
         // Fetch user and websites in parallel for speed
         const [user, websites, likeViews, viewViews, gotdWinners, gotmWinners, gotyWinners] = await Promise.all([
-            SignupModel.findOne({ email: slug }),
-            Website.find({ user_email: slug }),
+            SignupModel.findOne({ email: webdata.user_email }),
+            Website.find({ user_email: webdata.user_email }),
             LikeView.find(),
             ViewView.find(),
             GotdWinner.find(),
@@ -249,7 +254,7 @@ router.get("/designer-profile/:slug", async (req, res) => {
 });
 
 
-router.get("/users", async (req, res) => {
+router.get("/users", auth, async (req, res) => {
     try {
         const users = await SignupModel.find();
         res.status(200).json({ users, success: true });
@@ -258,17 +263,21 @@ router.get("/users", async (req, res) => {
     }
 });
 
-router.get("/users/:id", async (req, res) => {
+router.get("/users/:id", auth, async (req, res) => {
     const { id } = req.params;
     try {
         const user = await SignupModel.findById(id);
-        res.status(200).json({ user, success: true });
+        if (!user) {
+            return res.status(404).json({ message: "User not found", success: false });
+        }
+        const websites = await Website.find({ user_email: user.email });
+        res.status(200).json({ user, success: true, websites });
     } catch (error) {
         res.status(500).json({ message: "Error fetching user", error: error.message, success: false });
     }
 });
 
-router.post("/users/update/:id", async (req, res) => {
+router.post("/users/update/:id", auth, async (req, res) => {
     const { id } = req.params;
     const { role, adminAccess } = req.body;
     try {

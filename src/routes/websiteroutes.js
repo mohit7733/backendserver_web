@@ -195,6 +195,20 @@ router.post('/submit-site', async (req, res) => {
         });
     }
 });
+
+router.get('/title-check/:slug', async (req, res) => {
+    try {
+        const website = await Website.findOne({ slug: req.params.slug });
+        if (website) {
+            res.status(200).json({ message: 'Title already exists', success: false });
+        } else {
+            res.status(200).json({ message: 'Title is available', success: true });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching websites', error: error.message });
+    }
+});
+
 // admin get website by id
 router.get('/websites/:id', async (req, res) => {
     try {
