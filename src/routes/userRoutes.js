@@ -36,7 +36,6 @@ router.post('/login', async (req, res) => {
             if (!alreadyExists) {
                 return res.status(404).json({ message: "Invalid email/username or password", success: false });
             }
-            console.log(alreadyExists.role);
             if (alreadyExists.role === "user") {
                 return res.status(404).json({ message: "You are not authorized to access this page", success: false });
             }

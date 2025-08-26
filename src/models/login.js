@@ -99,6 +99,14 @@ const signupSchema = new mongoose.Schema({
         type: Array,
         default: [],
     },
+    subscription: {
+        type: Array,
+        default: [],
+    },
+    credit: {
+        type: Number,
+        default: 0,
+    },
 });
 
 // Prevent saving if email is missing or null

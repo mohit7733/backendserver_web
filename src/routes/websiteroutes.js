@@ -5,7 +5,7 @@ const { LikeView, ViewView } = require('../models/like_view');
 const auth = require('../middleware/auth');
 const { GotdWinner, GotmWinner, GotyWinner } = require('../models/aword_winner');
 const { Blog } = require('../models/blogs');
-const { emailTemplateapproved, emailTemplatesubmited } = require('../middleware/emailtemplate');
+const { emailTemplateapproved, emailTemplatesubmited, emailverification } = require('../middleware/emailtemplate');
 const { sendEmail } = require('../controllers/emailsender');
 const { SignupModel } = require('../models/login');
 
@@ -181,6 +181,18 @@ router.post('/submit-site', async (req, res) => {
                 'Website Submitted',
                 emailContent
             );
+
+            const user = await SignupModel.findOne({ email: user_email });
+            if (!user) {
+                return res.status(400).json({ message: "User not found", success: false });
+            }
+            if (user.credit > 0) {
+                user.credit = user.credit - 1;
+                await user.save();
+            } else {
+                return res.status(400).json({ message: "You have no credit. Please purchase a plan.", success: false });
+            }
+
             res.status(201).json({
                 message: 'Website submitted successfully',
                 website: website,
@@ -193,6 +205,33 @@ router.post('/submit-site', async (req, res) => {
             message: 'Error submitting website',
             error: error.message
         });
+    }
+});
+
+router.post("/user/submitemailverification", async (req, res) => {
+    const { email } = req.body;
+    if (!email) {
+        return res.status(400).json({ message: "Email is required", success: false });
+    }
+    try {
+        const user = await SignupModel.findOne({ email });
+        const website = await Website.find({ user_email: email });
+
+        console.log(user, website.length == 0);
+
+
+        if (!user && website.length == 0) {
+            const otp = Math.floor(100000 + Math.random() * 900000);
+            const emailTemplate = emailverification("user", otp);
+            await sendEmail(email, "Email Verification - Web Guru Awards", emailTemplate);
+            return res.status(200).json({ message: "OTP sent to your email", success: true, otp });
+        } else if (user && (!user?.credit || user?.credit == 0)) {
+            return res.status(400).json({ message: "You have no credit. Please purchase a plan.", success: false });
+        } else {
+            return res.status(200).json({ message: "Nothing to do" });
+        }
+    } catch (error) {
+        return res.status(500).json({ message: "Failed to send OTP", error: error.message, success: false });
     }
 });
 

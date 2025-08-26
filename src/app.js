@@ -22,6 +22,10 @@ const contactsRoutes = require("./routes/contactsRoutes")
 const countryRoutes = require("./routes/country")
 const usersRoutes = require("./routes/usersRoutes")
 const newslettersRoutes = require("./routes/newslettersRoutes")
+const pricingRoutes = require("./routes/pricingRoutes")
+const createOrder = require("./routes/createOrder")
+const paypalRoutes = require("./routes/paypal")
+
 dotenv.config();
 const app = express();
 app.use(express.json({ limit: '50mb' }));
@@ -48,6 +52,8 @@ app.use('/public/job_images', express.static('public/job_images'));
 app.get('/api', (req, res) => {
     res.send('Hello World');
 });
+app.use('/api/paypal', paypalRoutes);
+// app.use('/api', createOrder);
 app.use('/api', userRoutes);
 app.use('/api', pagesRoutes);
 app.use('/api', colorsRoutes);
@@ -66,6 +72,8 @@ app.use('/api', contactsRoutes)
 app.use('/api', countryRoutes)
 app.use('/api', usersRoutes)
 app.use('/api', newslettersRoutes)
+app.use('/api', pricingRoutes)
+
 app.use('/api', auth, awordsRoutes);
 //auth middleware
 // app.get('/', auth, (req, res) => {

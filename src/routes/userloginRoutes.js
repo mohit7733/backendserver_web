@@ -9,6 +9,7 @@ const Website = require('../models/website');
 const { LikeView, ViewView } = require('../models/like_view');
 const { GotdWinner, GotmWinner, GotyWinner } = require('../models/aword_winner');
 const auth = require('../middleware/auth');
+const Plans = require('../models/plans');
 
 
 
@@ -253,6 +254,31 @@ router.get("/designer-profile/:slug", async (req, res) => {
     }
 });
 
+router.post("/user/current-plan", async (req, res) => {
+    const { email } = req.body;
+    console.log(email);
+    try {
+        const user = await SignupModel.findOne({ email });
+        const activeplan = await Plans.findOne({ _id: user?.subscription[1]?.plansid });
+        res.status(200).json({ activeplan, success: true });
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching user", error: error.message, success: false });
+    }
+});
+
+router.post("/user/subscription", async (req, res) => {
+    const { email, subscription, credit } = req.body;
+    try {
+        const user = await SignupModel.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: "User not found", success: false });
+        }
+        const updateduser = await SignupModel.findByIdAndUpdate(user._id, { subscription, credit }, { new: true });
+        res.status(200).json({ updateduser, success: true });
+    } catch (error) {
+        res.status(500).json({ message: "Error creating subscription", error: error.message, success: false });
+    }
+});
 
 router.get("/users", auth, async (req, res) => {
     try {
@@ -286,7 +312,10 @@ router.post("/users/update/:id", auth, async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: "Error updating user", error: error.message, success: false });
     }
+
 });
+
+
 
 
 module.exports = router;    
