@@ -9,18 +9,28 @@ const { emailTemplateapproved, emailTemplatesubmited, emailverification } = requ
 const { sendEmail } = require('../controllers/emailsender');
 const { SignupModel } = require('../models/login');
 
-// get all websites with like/view counts
-router.get('/websites', auth, async (req, res) => {
+// get all websites with like/view counts and gotdWinner
+router.get('/websites', async (req, res) => {
     try {
-        // Fetch all websites and all LikeView, ViewView, and GotdWinner in parallel
-        const [websites, likeViews, viewViews, gotdWinners] = await Promise.all([
+        const { filter, month, day, year } = req.query;
+        let query = {};
+        // const newdate = new Date()
+        const award_date = (year || "2015") + "-" + (month || "01") + "-" + (day || "01");
+        if (filter === 'GOTD') {
+            query.award_date = award_date;
+        } else if (filter === 'GOTM') {
+            query.award_month = award_date;
+        }
+
+        const [websites, likeViews, viewViews, gotdWinners, gotmWinners, gotyWinners] = await Promise.all([
             Website.find().sort({ submit_date: -1 }),
             LikeView.find(),
             ViewView.find(),
-            GotdWinner.find()
+            GotdWinner.find(year && month && day ? { award_date: award_date } : {}),
+            GotmWinner.find(),
+            GotyWinner.find()
         ]);
 
-        // Create maps for fast lookup
         const likeMap = {};
         likeViews.forEach(lv => {
             if (!likeMap[lv.website_id]) likeMap[lv.website_id] = 0;
@@ -34,26 +44,70 @@ router.get('/websites', auth, async (req, res) => {
         });
 
         const gotdMap = {};
-        gotdWinners.forEach(gw => {
-            gotdMap[gw.website_id] = gw;
-        });
+        if (filter === 'GOTD' || !filter) {
+            gotdWinners.filter(gw => {
+                if (year && !month) {
+                    return (new Date(gw.award_date).getFullYear() === new Date(award_date).getFullYear())
+                } else if (month && !year) {
+                    return (new Date(gw.award_date).getMonth() === new Date(award_date).getMonth())
+                } else if (year && month) {
+                    return (new Date(gw.award_date).getFullYear() === new Date(award_date).getFullYear() && new Date(gw.award_date).getMonth() === new Date(award_date).getMonth())
+                } else {
+                    return true
+                }
+            }).forEach(gw => {
+                gotdMap[gw.website_id] = gw;
+            });
+        }
 
-        // Map websites to include counts and gotdWinner
-        const updatedWebsites = websites.map(website => {
+        const gotmMap = {};
+        if (filter === 'GOTM') {
+            gotmWinners.filter(gw => {
+                if (year) {
+                    return new Date(gw.award_month).getFullYear() === new Date(award_date).getFullYear()
+                } else {
+                    return true
+                }
+            }).forEach(gw => {
+                gotmMap[gw.website_id] = gw;
+            });
+        }
+
+
+        const gotyMap = {};
+        if (filter === 'GOTY') {
+            gotyWinners.forEach(gw => {
+                gotyMap[gw.website_id] = gw;
+            });
+        }
+
+        let updatedWebsites = websites.map(website => {
             const websiteObj = website.toObject();
             return {
                 ...websiteObj,
                 real_like_count: likeMap[website.website_id] || 0,
                 real_view_count: viewMap[website.website_id] || 0,
-                gotdWinner: gotdMap[website.website_id] || null
+                gotdWinner: gotdMap[website.website_id] || null,
+                gotmWinner: gotmMap[website.website_id] || null,
+                gotyWinner: gotyMap[website.website_id] || null
             };
         });
+
+        if (filter === 'GOTD') {
+            updatedWebsites = updatedWebsites.filter(website => website.gotdWinner);
+        } else if (filter === 'GOTM') {
+            updatedWebsites = updatedWebsites.filter(website => website.gotmWinner);
+        } else if (filter === 'GOTY') {
+            updatedWebsites = updatedWebsites.filter(website => website.gotyWinner);
+        }
 
         res.status(200).json(updatedWebsites);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching websites', error: error.message });
     }
 });
+
+
 // get websites nominees
 router.get('/websites-nominees/:count/:page/:winnertype', async (req, res) => {
     try {
@@ -86,7 +140,6 @@ router.get('/websites-nominees/:count/:page/:winnertype', async (req, res) => {
         res.status(500).json({ message: 'Error fetching websites', error: error.message, ok: false });
     }
 });
-
 // Submit a new website
 router.post('/submit-site', async (req, res) => {
     try {
@@ -207,7 +260,6 @@ router.post('/submit-site', async (req, res) => {
         });
     }
 });
-
 router.post("/user/submitemailverification", async (req, res) => {
     const { email } = req.body;
     if (!email) {
@@ -234,9 +286,12 @@ router.post("/user/submitemailverification", async (req, res) => {
         return res.status(500).json({ message: "Failed to send OTP", error: error.message, success: false });
     }
 });
-
+// check if title is available
 router.get('/title-check/:slug', async (req, res) => {
     try {
+        if (req.params.slug == "undefined") {
+            return res.status(400).json({ message: "Invalid slug", success: false });
+        }
         const website = await Website.findOne({ slug: req.params.slug });
         if (website) {
             res.status(200).json({ message: 'Title already exists', success: false });
@@ -421,7 +476,6 @@ router.delete('/websites/:slug', auth, async (req, res) => {
         res.status(500).json({ message: 'Error deleting website', error: error.message });
     }
 });
-
 
 router.get('/websites-count', auth, async (req, res) => {
     try {
