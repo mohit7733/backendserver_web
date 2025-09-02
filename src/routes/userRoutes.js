@@ -41,7 +41,7 @@ router.post('/login', async (req, res) => {
             }
             user = alreadyExists;
         }
-       
+
 
         // Compare the provided password with the stored password
         const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -50,7 +50,7 @@ router.post('/login', async (req, res) => {
         }
         // Generate a JWT token after successful authentication
         const token = generateToken(user._id);
-        res.json({ token, message: 'Login Done', success: true, user });
+        res.json({ success: true, user, token, message: 'Login Done' });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
