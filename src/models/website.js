@@ -57,6 +57,18 @@ const websiteSchema = new mongoose.Schema({
         type: String,
         default: "",
     },
+    behance_url: {
+        type: String,
+        default: "",
+    },
+    dribbble_url: {
+        type: String,
+        default: "",
+    },
+    tiktok_url: {
+        type: String,
+        default: "",
+    },
     google_plus_url: {
         type: String,
         default: "",

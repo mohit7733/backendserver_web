@@ -76,7 +76,13 @@ router.get('/websites', async (req, res) => {
 
         const gotyMap = {};
         if (filter === 'GOTY') {
-            gotyWinners.forEach(gw => {
+            gotyWinners.filter(gw => {
+                if (year) {
+                    return new Date(gw.award_year).getFullYear() === new Date(award_date).getFullYear()
+                } else {
+                    return true
+                }
+            }).forEach(gw => {
                 gotyMap[gw.website_id] = gw;
             });
         }
@@ -179,6 +185,9 @@ router.post('/submit-site', async (req, res) => {
                 instagram_url,
                 linkedin_url,
                 youtube_url,
+                behance_url,
+                dribbble_url,
+                tiktok_url,
                 slug
             } = req.body;
 
@@ -213,6 +222,9 @@ router.post('/submit-site', async (req, res) => {
                 instagram_url,
                 linkedin_url,
                 youtube_url,
+                behance_url,
+                dribbble_url,
+                tiktok_url,
                 website_id: websites.sort((a, b) => b.website_id - a.website_id)[0]?.website_id + 1,
                 slug,
                 image_rand: Math.random().toString(36).substring(2, 15),
