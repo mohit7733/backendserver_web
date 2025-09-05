@@ -4,7 +4,7 @@ const Plans = require('../models/plans');
 
 router.get('/subscription-plans', async (req, res) => {
     try {
-        const plans = (await Plans.find({})).reverse();
+        const plans = (await Plans.find({}));
         res.status(200).json({ plans, success: true });
     } catch (error) {
         res.status(500).json({ message: 'Error fetching subscription plans', error: error.message });

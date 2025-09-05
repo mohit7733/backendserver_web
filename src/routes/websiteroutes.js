@@ -191,12 +191,21 @@ router.post('/submit-site', async (req, res) => {
                 slug
             } = req.body;
 
+
             // Validate required fields
             const requiredFields = ['title', 'website_url', 'designed_by', 'designer_url', 'user_email', 'website_description'];
             for (const field of requiredFields) {
                 if (!req.body[field]) {
                     return res.status(400).json({ message: `${field} is required` });
                 }
+            }
+
+            const user = await SignupModel.findOne({ email: user_email });
+            if (user && user.credit > 0) {
+                user.credit = user.credit - 1;
+                await user.save();
+            } else if (user && user.credit == 0) {
+                return res.status(400).json({ message: "You have no credit. Please purchase a plan.", success: false });
             }
 
             // Get file paths if files were uploaded
@@ -247,21 +256,13 @@ router.post('/submit-site', async (req, res) => {
                 emailContent
             );
 
-            const user = await SignupModel.findOne({ email: user_email });
-            if (!user) {
-                return res.status(400).json({ message: "User not found", success: false });
-            }
-            if (user.credit > 0) {
-                user.credit = user.credit - 1;
-                await user.save();
-            } else {
-                return res.status(400).json({ message: "You have no credit. Please purchase a plan.", success: false });
-            }
+
 
             res.status(201).json({
                 message: 'Website submitted successfully',
                 website: website,
-                result
+                result,
+                plan: user?.subscription || null
             });
         });
     } catch (error) {
@@ -273,23 +274,23 @@ router.post('/submit-site', async (req, res) => {
     }
 });
 router.post("/user/submitemailverification", async (req, res) => {
-    const { email } = req.body;
+    const { email, type } = req.body;
     if (!email) {
         return res.status(400).json({ message: "Email is required", success: false });
     }
     try {
         const user = await SignupModel.findOne({ email });
-        const website = await Website.find({ user_email: email });
+        let website = []
+        if (!user) {
+            website = await Website.find({ user_email: email });
+        }
 
-        console.log(user, website.length == 0);
-
-
-        if (!user && website.length == 0) {
+        if (!user && website.length == 0 && type == null) {
             const otp = Math.floor(100000 + Math.random() * 900000);
             const emailTemplate = emailverification("user", otp);
             await sendEmail(email, "Email Verification - Web Guru Awards", emailTemplate);
             return res.status(200).json({ message: "OTP sent to your email", success: true, otp });
-        } else if (user && (!user?.credit || user?.credit == 0)) {
+        } else if (user && (!user?.credit || user?.credit == 0) && type == "submit-site") {
             return res.status(400).json({ message: "You have no credit. Please purchase a plan.", success: false });
         } else {
             return res.status(200).json({ message: "Nothing to do" });
